@@ -1,7 +1,7 @@
 # SolaX Charge Time
 The files in this section cover setting up an automation in Home Assistant to automatically adjust the force charge time of the SolaX inverter to the lowest cost 2 hour window on an Octopus tariff.
 
-**Caveats:** this works for me on Octopus Agile with a SolaX xxx inverter and Home Assistant on a Pi talking to a Waveshare. YMMV!
+**Caveats:** this works for me on Octopus Agile with a SolaX X1-Hybrid-G4 inverter and Home Assistant on a Pi talking to a Waveshare. YMMV!
 
 The key steps are (assuming HA is set up with the SolaX and Octopus integrations working):
 1. Create a target rate sensor to find a low-cost 2 hour window;
@@ -9,6 +9,10 @@ The key steps are (assuming HA is set up with the SolaX and Octopus integrations
 1. Update the charge time on the inverter for the new window.
 
 **Note:** Make sure you have the *File editor* Add-on installed in HA!
+
+## TODO
+* Probably lots - this is a first attempt at anything like this with HA and I'm new to SolaX as well...
+    * The script paramaters need tightening up though to allow UI mode for testing. It should turn "HH:MM:SS" into "HH:MM" for you...
 
 ## Setup
 
