@@ -1,0 +1,53 @@
+alias: Update Solax Charge Time 1
+mode: restart
+icon: mdi:battery
+variables:
+  current_start_time: "{{ states('select.solax_charger_start_time_1') }}"
+  current_end_time: "{{ states('select.solax_charger_end_time_1') }}"
+fields:
+  start_time:
+    name: Start Time
+    description: Starting time for charge period 1
+    selector:
+      time: null
+  end_time:
+    name: End Time
+    description: End time for charge period 1
+    selector:
+      time: null
+sequence:
+  - if:
+      - condition: template
+        value_template: "{{ current_start_time != start_time }}"
+    then:
+      - service: select.select_option
+        target:
+          entity_id: select.solax_charger_start_time_1
+        data:
+          option: "{{ start_time }}"
+      - service: notify.persistent_notification
+        data:
+          message: >
+            Updated charge time 1 start from {{ current_start_time }} to {{ start_time }}
+          title: Update Start Time
+  - if:
+      - condition: template
+        value_template: "{{ current_end_time != end_time }}"
+    then:
+      - service: select.select_option
+        target:
+          entity_id: select.solax_charger_end_time_1
+        data:
+          option: "{{ end_time }}"
+      - service: notify.persistent_notification
+        data:
+          message: >
+            Updated charge time 1 end from {{ current_end_time }} to {{ end_time }}
+          title: Update End Time
+  - service: notify.persistent_notification
+    data:
+      message: >
+        Current charge time 1 is {{ current_start_time }} -> {{ current_end_time }}.
+        Updated charge time 1 to {{ start_time }} -> {{ end_time }}.
+        Inverter mode is {{ states('sensor.solax_run_mode') }}
+      title: Updated Charge Time 1
