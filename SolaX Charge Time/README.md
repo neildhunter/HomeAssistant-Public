@@ -8,6 +8,8 @@ The key steps are (assuming HA is set up with the SolaX and Octopus integrations
 1. Trigger an automation when the next day's Octopus rates are published and a new window is identified;
 1. Update the charge time on the inverter for the new window.
 
+**Note:** Make sure you have the *File editor* Add-on installed in HA!
+
 ## Setup
 
 ### Configure the Inverter
@@ -33,7 +35,7 @@ For me this all works with the inverter running in "self-use" mode with grid cha
     - Get this up and running!
     - If you want to test at this stage go to the *Developer Tools* in HA and the *STATES* tab and type "charger" in the *"Filter entities"* box at the top of the *Entity* column;
         - You should get several entities back including *select.solax_charger_start_time_1* and *select.solax_charger_end_time_1* which should (might!) have the values you saw in the SolaX app earlier;
-        - You can click on these and change the state value and see it reflected in the app - but note that the value must be one of the **list of options** through the HA integration. They can't be set to (or display) arbitrary times.
+        - You can click on these and change the state value and see it reflected in the app - but note that the value must be one of the **list of options** through the HA integration. They can't be set to (or display) arbitrary times. (See [screenshot](./screenshots/solax_charger_start_time_1%20entity%20with%20options.png))
     - If this doesn't show the updates in the app then you might need to unlock the inverter first or it might be in *"Idle"* mode in which case you might need to wait for some PV!
 
 
@@ -60,13 +62,19 @@ I chose to create a script to handle making the actual changes to the charge tim
 - In HA go to *Settings|Automations & scenes* and select *"Scripts"*;
 - Select *"+ ADD SCRIPT"* followed by *"Create new script"*;
 - In the script editor that appears select the three dot menu in the top right corner and select *"Edit in YAML"*;
-- Copy and paste the [Update Charge Time 1](./scripts/updateSolaxChargeTime1.yaml) script into the editor and save it.
-- Go back to the scripts page and you should now have a *"Update Solax Charge Time 1"* script listed.
+- Copy and paste the [Update Charge Time 1](./scripts/updateSolaxChargeTime1.yaml) script into the editor (replacing all the existing content) and save it.
+- Go back to the scripts page and you should now have an *"Update Solax Charge Time 1"* script listed.
     - Select the three dot menu on the right for this script and pick *"Information"*;
     - In the information dialog select *settings* (the cog icon);
-    - On the settings page change the *"Entity ID"* from a numeric value to *"script.update_solax_charge_time_1"* and hit *UPDATE*
+    - On the settings page make a note of the numeric value part of the *"Entity ID"* after *"script."* - we want to change this to something more useful.
 
-**TBC: might need a HA restart at this point? Reloading scripts YAML not enough...**
+- In HA open the *File Editor* add-on and select *browse file system* (the folder icon at the top).
+    - Navigate to the *config/* part of the tree and open *scripts.yaml*
+    - Scroll through the file and find the entry for the script we've just created - it will start with the numeric part of the entity ID from above, e.g. `'1699395551527':`
+    - Change this to a more friendly `update_solax_charge_time_1:` and save the file
+
+- In HA go to the *Developer tools* and *YAML* tab;
+    - Scroll down to the *SCRIPTS* entry and select it to reload the file we've just edited
 
 You should now be able to find this script through the *SERVICES* tab of the *Developer tools* and test it by suppliying sample values. **Note:** if you use the *UI mode* it will give you a time picker for the start_time and end_time parameters, *but* they only work with *"HH:MM"*. You may need to switch to *YAML mode* and change it to be something like:
 
@@ -79,6 +87,18 @@ data:
 
 There are some sample [screenshots](./screenshots/) (*"Call Script..."*).
 
-If the script is working you should get a bunch of notifications to let you know what it's done (you might want to remove some to make it less chatty!)
+If the script is working then when you call it you should get a bunch of notifications to let you know what it's done (you might want to remove some to make it less chatty!) and you should be able to confirm the changes through the SolaX app.
 
 ### Create an Automation to Call the Script
+Now we have a script to update the inverter settings the last step is to set up an automation to call it when the next day's rates are available. We can do that easily by triggering on a change to the *next_time* attribute of the target sensor we created earlier (*binary_sensor.octopus_energy_target_charge_battery*).
+
+- In HA go to *Settings|Automations & scenes* and select *"Automations"*;
+- Select *"+ CREATE AUTOMATION"* followed by *"Create new automation"*;
+- In the script editor that appears select the three dot menu in the top right corner and select *"Edit in YAML"*;
+- Copy and paste the [Update Grid Charge Period](./automations/update_grid_charge_period.yaml) automation into the editor (replacing all the existing content) and save it.
+    - Call it whatever name you like, I used "Update Grid Charge Period"
+- Go back to the automations page and you should now have an *"Update Grid Charge Period"* automation listed.
+
+You should now be all set and the next time the rates change the automation should fire and you should get a bunch of notifications.
+
+**If** your target sensor already has the window identified (i.e. if you look at the entity in the *Developer tools* and it has a timestamp for the *next_time* attribute) then you can manually run the automation through the three dot menu on the right. That should then simulate being triggered and should all work!

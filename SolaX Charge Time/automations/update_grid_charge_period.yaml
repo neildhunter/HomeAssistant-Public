@@ -1,0 +1,39 @@
+alias: Update Grid Charge Period
+description: Update charging window for grid charging based on updated rates.
+trigger:
+  - platform: state
+    entity_id:
+      - binary_sensor.octopus_energy_target_charge_battery
+    attribute: next_time
+condition:
+  not:
+    - condition: state
+      entity_id: binary_sensor.octopus_energy_target_charge_battery
+      attribute: next_time
+      state: unknown
+    - condition: state
+      entity_id: binary_sensor.octopus_energy_target_charge_battery
+      attribute: next_time
+      state: null
+action:
+  - variables:
+      charging_start_time: >-
+        {% set next_time_value=state_attr('binary_sensor.octopus_energy_target_charge_battery','next_time') %}
+        {% set start_time=next_time_value.astimezone().strftime('%H:%M') %}
+        {{ start_time }}
+      charging_end_time: >-
+        {% set next_time_value=state_attr('binary_sensor.octopus_energy_target_charge_battery','next_time')+timedelta(hours=2.0) %}
+        {% set end_time=next_time_value.astimezone().strftime('%H:%M') %}
+        {{ end_time }}
+  - service: notify.persistent_notification
+    data:
+      message: >-
+        Charge period identified as starting from {{ state_attr('binary_sensor.octopus_energy_target_charge_battery','next_time') }}.
+        Calculated as {{ charging_start_time }} to {{ charging_end_time }}
+      title: Charge Period Identified
+# Or use test service script.update_charge_time_test
+  - service: script.update_solax_charge_time_1
+      data:
+      start_time: "{{ charging_start_time }}"
+      end_time: "{{ charging_end_time }}"
+mode: single
