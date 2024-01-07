@@ -96,6 +96,12 @@ If the script is working then when you call it you should get a bunch of notific
 ### Create an Automation to Call the Script
 Now we have a script to update the inverter settings the last step is to set up an automation to call it when the next day's rates are available. We can do that easily by triggering on a change to the *next_time* attribute of the target sensor we created earlier (*binary_sensor.octopus_energy_target_charge_battery*).
 
+Before doing that create a helper to record the average cost (I display this on my HA dashboard and it gets lost once the target time passes)
+- In HA go to *Settings|Devices & services* and select *"Helpers"*;
+- Select *"+ CREATE HELPER"* and choose *"Number"*;
+    - Call it "charge_battery_average_cost" and make sure it has a suitable positive *and* negative range (I've used -100 -> +100). I've also used a step size of 0.1 as tenth of a penny is more than accurate enough for my needs! (See [Average Cost Helper](./screenshots/Average Cost Helper.png))
+
+Now create the automation:
 - In HA go to *Settings|Automations & scenes* and select *"Automations"*;
 - Select *"+ CREATE AUTOMATION"* followed by *"Create new automation"*;
 - In the script editor that appears select the three dot menu in the top right corner and select *"Edit in YAML"*;
