@@ -6,15 +6,15 @@ trigger:
       - binary_sensor.octopus_energy_target_charge_battery
     attribute: next_time
 condition:
-  not:
-    - condition: state
-      entity_id: binary_sensor.octopus_energy_target_charge_battery
-      attribute: next_time
-      state: unknown
-    - condition: state
-      entity_id: binary_sensor.octopus_energy_target_charge_battery
-      attribute: next_time
-      state: null
+  - not:
+      - condition: state
+        entity_id: binary_sensor.octopus_energy_target_charge_battery
+        attribute: next_time
+        state: unknown
+      - condition: state
+        entity_id: binary_sensor.octopus_energy_target_charge_battery
+        attribute: next_time
+        state: null
 action:
   - variables:
       charging_start_time: >-
@@ -22,18 +22,26 @@ action:
         {% set start_time=next_time_value.astimezone().strftime('%H:%M') %}
         {{ start_time }}
       charging_end_time: >-
-        {% set next_time_value=state_attr('binary_sensor.octopus_energy_target_charge_battery','next_time')+timedelta(hours=2.0) %}
+        {% set next_duration=state_attr('binary_sensor.octopus_energy_target_charge_battery','next_duration_in_hours') %}
+        {% set next_time_value=state_attr('binary_sensor.octopus_energy_target_charge_battery','next_time')+timedelta(hours=next_duration) %}
         {% set end_time=next_time_value.astimezone().strftime('%H:%M') %}
         {{ end_time }}
+      charging_cost: >-
+        {% set next_cost=state_attr('binary_sensor.octopus_energy_target_charge_battery','next_average_cost') * 100 %}
+        {{ next_cost | round(1) }}
   - service: notify.persistent_notification
     data:
       message: >-
         Charge period identified as starting from {{ state_attr('binary_sensor.octopus_energy_target_charge_battery','next_time') }}.
-        Calculated as {{ charging_start_time }} to {{ charging_end_time }}
+        Calculated as {{ charging_start_time }} to {{ charging_end_time }} at {{ charging_cost }}p
       title: Charge Period Identified
-# Or use test service script.update_charge_time_test
+  - service: input_number.set_value
+    target:
+      entity_id: input_number.charge_battery_average_cost
+    data:
+      value: "{{ charging_cost }}"
   - service: script.update_solax_charge_time_1
-      data:
+    data:
       start_time: "{{ charging_start_time }}"
       end_time: "{{ charging_end_time }}"
 mode: single
