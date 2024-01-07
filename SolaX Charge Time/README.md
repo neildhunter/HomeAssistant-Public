@@ -99,7 +99,7 @@ Now we have a script to update the inverter settings the last step is to set up 
 Before doing that create a helper to record the average cost (I display this on my HA dashboard and it gets lost once the target time passes)
 - In HA go to *Settings|Devices & services* and select *"Helpers"*;
 - Select *"+ CREATE HELPER"* and choose *"Number"*;
-    - Call it "charge_battery_average_cost" and make sure it has a suitable positive *and* negative range (I've used -100 -> +100). I've also used a step size of 0.1 as tenth of a penny is more than accurate enough for my needs! (See [Average Cost Helper](./screenshots/Average Cost Helper.png))
+    - Call it "charge_battery_average_cost" and make sure it has a suitable positive *and* negative range (I've used -100 -> +100). I've also used a step size of 0.1 as tenth of a penny is more than accurate enough for my needs! (See [Average Cost Helper](./screenshots/Average%20Cost%20Helper.png) )
 
 Now create the automation:
 - In HA go to *Settings|Automations & scenes* and select *"Automations"*;
